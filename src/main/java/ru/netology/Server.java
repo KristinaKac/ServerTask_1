@@ -2,37 +2,39 @@ package ru.netology;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.net.Socket;
+import java.util.concurrent.*;
 
-public class Server extends Thread {
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(64);
-    ServerThread serverThread = new ServerThread();
+public class Server {
 
-    @Override
-    public void run() {
+    ExecutorService threadPool = Executors.newFixedThreadPool(64);
+
+    public void listen(int port) {
         ServerSocket serverSocket;
         try {
-            serverSocket = new ServerSocket(9999);
+            serverSocket = new ServerSocket(port);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         while (true) {
             try {
-                var socket = serverSocket.accept();
+                Socket socket = serverSocket.accept();
                 threadPool.submit(() -> {
                     try {
-                        serverThread.processing(socket);
+                        ServerThread.working(socket);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 });
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
+    }
+
+    public void addHandler(String method, String path, Handler handler) {
+       ServerThread.handlers.putIfAbsent(method, new ConcurrentHashMap<>());
+       ServerThread.handlers.get(method).put(path, handler);
     }
 }
 
