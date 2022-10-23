@@ -4,9 +4,11 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.*;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        Map<String, String> params;
 
         final var server = new Server();
 
@@ -22,16 +24,16 @@ public class Main {
         server.addHandler("GET", "/app.js", Main::processFile);
         server.addHandler("GET", "/desktop.ini", Main::processFile);
         server.addHandler("GET", "/favicon.ico", Main::processFile);
+        server.addHandler("GET", "/default-get.html", Main::processFile);
 
-        server.addHandler("POST", "/messages", new Handler() {
-            @Override
-            public void handle(Request request, BufferedOutputStream out) {
+        server.addHandler("POST", "/forms.html", Main::processFile);
 
-            }
-        });
+        params = getQueryParams(new Request("GET", "http://localhost:9999/?login=one&password=two"));
+        System.out.println(params);
         server.listen(9999);
     }
-    private static void processFile(Request request, BufferedOutputStream out){
+
+    private static void processFile(Request request, BufferedOutputStream out) {
         final var filePath = Path.of(".", "public", request.getPath());
         try {
             final var mimeType = Files.probeContentType(filePath);
@@ -48,6 +50,17 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    public static Map<String, String> getQueryParams(Request request) {
+        Map<String, String> params = new HashMap<>();
+        String url = request.getPath();
+        String[] urlParts = url.split("\\?");
+        String query = urlParts[1];
+            for (String param : query.split("&")) {
+                String[] pair = param.split("=");
+                params.put(pair[0], pair[1]);
+            }
+            return params;
     }
 }
 

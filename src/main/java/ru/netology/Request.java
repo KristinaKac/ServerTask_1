@@ -1,11 +1,13 @@
 package ru.netology;
 
+import java.util.HashMap;
+import java.util.Map;
 
 public class Request {
     private final String method;
     private final String path;
 
-    public Request(String method, String path){
+    public Request(String method, String path) {
         this.method = method;
         this.path = path;
     }
@@ -17,4 +19,5 @@ public class Request {
     public String getMethod() {
         return method;
     }
+
 }

@@ -1,5 +1,10 @@
 package ru.netology;
 
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -9,7 +14,9 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerThread {
+    static String path;
     static ConcurrentHashMap<String, ConcurrentHashMap<String, Handler>> handlers = new ConcurrentHashMap<>();
+
     public static void working(Socket socket) throws IOException {
 
         while (true) {
@@ -24,14 +31,16 @@ public class ServerThread {
                 continue;
             }
             Request request = new Request(parts[0], parts[1]);
+            path = request.getPath();
 
-            if (!handlers.containsKey(request.getMethod())){
+
+            if (!handlers.containsKey(request.getMethod())) {
                 notFound(out);
                 return;
             }
             var methodHandler = handlers.get(request.getMethod());
 
-            if (!methodHandler.containsKey(request.getPath())){
+            if (!methodHandler.containsKey(request.getPath())) {
                 notFound(out);
                 return;
             }
@@ -39,6 +48,7 @@ public class ServerThread {
             handler.handle(request, out);
         }
     }
+
     public static void notFound(BufferedOutputStream out) throws IOException {
         out.write((
                 "HTTP/1.1 404 Not Found\r\n" +

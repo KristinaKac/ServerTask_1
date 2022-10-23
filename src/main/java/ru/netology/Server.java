@@ -3,16 +3,19 @@ package ru.netology;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.*;
 
+import static ru.netology.ServerThread.handlers;
+
 public class Server {
-
     ExecutorService threadPool = Executors.newFixedThreadPool(64);
-
     public void listen(int port) {
         ServerSocket serverSocket;
         try {
             serverSocket = new ServerSocket(port);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -31,11 +34,11 @@ public class Server {
             }
         }
     }
-
     public void addHandler(String method, String path, Handler handler) {
-       ServerThread.handlers.putIfAbsent(method, new ConcurrentHashMap<>());
-       ServerThread.handlers.get(method).put(path, handler);
+       handlers.putIfAbsent(method, new ConcurrentHashMap<>());
+       handlers.get(method).put(path, handler);
     }
+
 }
 
 
